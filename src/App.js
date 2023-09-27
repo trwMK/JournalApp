@@ -30,6 +30,7 @@ export default function App() {
           {showForm ? "Hide Form" : "Show Form"}
         </button>
       </div>
+      <h2>{items.length > 0 ? "Your journal" : "Write about your life"}</h2>
       {showForm && (
         <div>
           <AddItem onAddItems={handleAddItems} />
