@@ -1,17 +1,19 @@
 import { useState } from "react";
 import EditItem from "./EditItem";
-export default function Item({ item, onDeleteItem, onUpdateItem }) {
+export default function Item({ item, onUpdateItem, onDeleteItem }) {
   const [showEdit, setShowEdit] = useState(false);
 
   const date = new Date();
   const curDate = date.toDateString();
+
+  console.log("Item in Item component:", item.id);
 
   return (
     <>
       <li className="item">
         <div className="itemHeader">
           <h6>{curDate}</h6>
-          <button className="btnDelete" onClick={() => onDeleteItem(item.id)}>
+          <button className="btnDelete" onClick={() => onDeleteItem(item)}>
             X
           </button>
         </div>
@@ -19,7 +21,7 @@ export default function Item({ item, onDeleteItem, onUpdateItem }) {
           <h4>{item.header}</h4>
           <p>{item.body}</p>
           <button className="btnUpdate" onClick={() => setShowEdit(!showEdit)}>
-            Up
+            Update
           </button>
         </div>
       </li>

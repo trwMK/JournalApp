@@ -1,15 +1,15 @@
 import Item from "./Item";
 
-export default function ItemList({ onDeleteItem, items, onUpdateItem }) {
+export default function ItemList({ items, onUpdateItem, onDeleteItem }) {
   return (
     <div className="list">
       <ul>
         {items.map((item) => (
           <Item
-            key={item}
+            key={item.id}
             item={item}
-            onDeleteItem={onDeleteItem}
             onUpdateItem={onUpdateItem}
+            onDeleteItem={onDeleteItem}
           />
         ))}
       </ul>

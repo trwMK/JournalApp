@@ -1,60 +1,132 @@
 import "./styles.css";
 import ItemList from "./Components/ItemList";
 import AddItem from "./Components/AddItem";
-import { useState } from "react";
-import { useLocalStorageState } from "./useLocalStorageState";
-import EditItem from "./Components/EditItem";
+import { useEffect, useState } from "react";
 
 export default function App() {
-  const [items, setItems] = useLocalStorageState([], "items");
+  const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [item, setItem] = useState({});
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function fetchData() {
+      setIsPending(true);
+      try {
+        const res = await fetch("http://localhost:8000/items");
+
+        if (!res.ok) {
+          throw Error("Could not fetch the data");
+        }
+
+        const data = await res.json();
+        console.log(data);
+        setItems(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsPending(false);
+        setError("");
+      }
+    }
+    fetchData();
+  }, []);
 
   //Handler Functions
-  function handleAddItems(item) {
-    const id = Math.floor(Math.random() * 10000) + 1;
-    const newItem = { ...item, id };
-    setItems([...items, newItem]);
+  async function handleAddItems(newItem) {
+    try {
+      const res = await fetch("http://localhost:8000/items", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newItem),
+      });
+
+      if (!res.ok) {
+        throw Error("Could not add the item");
+      }
+
+      const data = await res.json();
+      setItems([...items, data]);
+    } catch (error) {
+      console.error("Error: ", error);
+    }
   }
 
-  function handleDeleteItem(id) {
-    setItems(items.filter((item) => item.id !== id));
+  async function handleDeleteItem(deletedItem) {
+    try {
+      const res = await fetch(`http://localhost:8000/items/${deletedItem.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw Error("Could not delete the item");
+
+      const updatedItems = items.filter((item) => item.id !== deletedItem.id);
+      setItems(updatedItems);
+    } catch (error) {
+      console.log(error.message);
+    }
   }
 
-  function handleUpdateItem(updatedItem) {
-    const itemIndex = items.findIndex((i) => i.id === updatedItem.id);
+  async function handleUpdateItem(updatedItem) {
+    try {
+      const res = await fetch(`http://localhost:8000/items/${updatedItem.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedItem),
+      });
 
-    if (itemIndex === -1) return;
+      if (!res.ok) {
+        throw Error("Could not update the item");
+      }
 
-    const updatedItems = [...items];
-    updatedItems[itemIndex] = updatedItem;
-    setItems(updatedItems);
+      const data = await res.json();
+      const updatedItems = items.map((item) =>
+        item.id === updatedItem.id ? data : item
+      );
+      setItems(updatedItems);
+    } catch (error) {
+      console.error("Error: ", error);
+    }
   }
 
   return (
     <div className="App">
-      <div className="header">
-        <h1>Your diary to a better life</h1>
-        <button
-          className={showForm ? "btnFormHide btnForm" : "btnFormAdd btnForm"}
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "Hide Form" : "Show Form"}
-        </button>
-      </div>
-      <h2>{items.length > 0 ? "Your journal" : "Write about your life"}</h2>
-      {showForm && (
-        <div>
-          <AddItem onAddItems={handleAddItems} setShowForm={setShowForm} />
-        </div>
+      {error && <div>{error}</div>}
+      {isPending ? (
+        <div>Loading data...</div>
+      ) : (
+        <>
+          <div className="header">
+            <h1>Your diary to a better life</h1>
+            <button
+              className={
+                showForm ? "btnFormHide btnForm" : "btnFormAdd btnForm"
+              }
+              onClick={() => setShowForm(!showForm)}
+            >
+              {showForm ? "Hide Form" : "Show Form"}
+            </button>
+          </div>
+          <h2>{items.length ? "Your journal" : "Write about your life"}</h2>
+          {showForm && (
+            <div>
+              <AddItem onAddItems={handleAddItems} setShowForm={setShowForm} />
+            </div>
+          )}
+          <ItemList
+            onUpdateItem={handleUpdateItem}
+            onDeleteItem={handleDeleteItem}
+            item={item}
+            setItem={setItem}
+            items={items}
+          />
+        </>
       )}
-      <ItemList
-        onDeleteItem={handleDeleteItem}
-        onUpdateItem={handleUpdateItem}
-        item={item}
-        setItem={setItem}
-        items={items}
-      />
     </div>
   );
 }
