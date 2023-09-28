@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function AddItem({ onAddItems }) {
+export default function AddItem({ onAddItems, setShowForm }) {
   const [header, setHeader] = useState("");
   const [body, setBody] = useState("");
 
@@ -9,6 +9,7 @@ export default function AddItem({ onAddItems }) {
     onAddItems({ header, body });
     setHeader("");
     setBody("");
+    setShowForm(false);
   }
 
   return (

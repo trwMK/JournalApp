@@ -140,6 +140,13 @@ textarea {
   background: none;
 }
 
+.btnUpdate {
+  padding: 5px 10px;
+  background: rgb(30, 121, 239);
+  border: none;
+  border-radius: 7px;
+}
+
 .btnForm {
   display: inline-block;
   padding: 5px 10px;
